@@ -178,6 +178,10 @@ async function fixFile(
         }
       });
 
+      cl.log.success(dedent`
+        Applying codemod ${pc.cyan(replacement.moduleName)} to ${scanResult.path}
+      `);
+
       newContent = transformResult;
     } catch (err) {
       cl.log.error(dedent`
@@ -189,10 +193,6 @@ async function fixFile(
   }
 
   if (scanResult.contents !== newContent) {
-    cl.log.success(dedent`
-      Writing file ${scanResult.path} with codemod changes.
-    `);
-
     await writeFile(scanResult.path, newContent, 'utf8');
   }
 }
