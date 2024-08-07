@@ -425,6 +425,10 @@ const packageScanSpinner = cl.spinner();
 
 packageScanSpinner.start('Scanning `package.json` dependencies');
 
+const dependenciesToRemove: string[] = [];
+const devDependenciesToRemove: string[] = [];
+let packageJsonFailed = false;
+
 if (isDependenciesLike(packageDependencies)) {
   const traverseResults = traverseDependencies(
     packageDependencies,
@@ -433,14 +437,12 @@ if (isDependenciesLike(packageDependencies)) {
   );
 
   if (options.autoUninstall) {
-    const args = [
-      'rm',
-      '-S',
-      ...traverseResults.map((result) => result.match.moduleName)
-    ];
-
-    await x('npm', args);
+    for (const result of traverseResults) {
+      dependenciesToRemove.push(result.match.moduleName);
+    }
   }
+
+  packageJsonFailed = true;
 }
 
 if (
@@ -454,17 +456,40 @@ if (
   );
 
   if (options.autoUninstall) {
-    const args = [
-      'rm',
-      '-D',
-      ...traverseResults.map((result) => result.match.moduleName)
-    ];
-
-    await x('npm', args);
+    for (const result of traverseResults) {
+      devDependenciesToRemove.push(result.match.moduleName);
+    }
   }
+
+  packageJsonFailed = true;
 }
 
-packageScanSpinner.stop('`package.json` dependencies scanned successfully.');
+if (packageJsonFailed) {
+  packageScanSpinner.stop('`package.json` dependencies scanned successfully.');
+} else {
+  packageScanSpinner.stop(
+    '`package.json` contained replaceable dependencies.',
+    2
+  );
+}
+
+if (
+  options.autoUninstall &&
+  (dependenciesToRemove.length > 0 || devDependenciesToRemove.length > 0)
+) {
+  const npmSpinner = cl.spinner();
+
+  npmSpinner.start('Removing npm dependencies');
+
+  if (dependenciesToRemove.length > 0) {
+    await x('npm', ['rm', '-S', ...dependenciesToRemove]);
+  }
+  if (devDependenciesToRemove.length > 0) {
+    await x('npm', ['rm', '-D', ...devDependenciesToRemove]);
+  }
+
+  npmSpinner.stop('npm dependencies removed');
+}
 
 const fileScanSpinner = cl.spinner();
 
@@ -478,7 +503,11 @@ const scanFilesResult = await scanFiles(
   fileScanSpinner
 );
 
-fileScanSpinner.stop('Scanned files successfully.');
+if (scanFilesResult.length > 0) {
+  fileScanSpinner.stop('Detected files with replaceable modules!', 2);
+} else {
+  fileScanSpinner.stop('All files scanned');
+}
 
 if (options.fix) {
   await fixFiles(scanFilesResult);
