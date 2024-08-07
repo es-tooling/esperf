@@ -1,0 +1,56 @@
+{
+  "name": "mr-cli",
+  "version": "0.0.1",
+  "description": "A command-line utility for detecting performance issues",
+  "main": "lib/main.js",
+  "type": "module",
+  "files": [
+    "lib",
+    "!lib/test"
+  ],
+  "scripts": {
+    "clean:build": "premove lib",
+    "clean:test": "premove coverage",
+    "build:js": "npm run clean:build && tsc",
+    "build": "npm run lint && npm run build:js",
+    "lint": "eslint src",
+    "format": "prettier --write src",
+    "test": "npm run build:js && npm run clean:test && c8 node --test",
+    "prepublishOnly": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/es-tooling/cli.git"
+  },
+  "keywords": [
+    "cli",
+    "e18e",
+    "perf",
+    "performance"
+  ],
+  "author": "James Garbutt (https://github.com/43081j)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/es-tooling/cli/issues"
+  },
+  "homepage": "https://github.com/es-tooling/cli#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.8.0",
+    "@types/node": "^22.1.0",
+    "c8": "^10.1.2",
+    "eslint": "^9.8.0",
+    "premove": "^4.0.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.0.1"
+  },
+  "dependencies": {
+    "@ast-grep/napi": "^0.25.7",
+    "@clack/prompts": "^0.7.0",
+    "dedent": "^1.5.3",
+    "fd-package-json": "^1.2.0",
+    "fdir": "^6.2.0",
+    "module-replacements": "^2.3.2",
+    "picocolors": "^1.0.1"
+  }
+}
