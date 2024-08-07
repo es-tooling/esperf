@@ -1,4 +1,4 @@
-# {name}
+# module-replacements CLI
 
 > A command-line utility for detecting and fixing performance problems in
 > JavaScript projects.
@@ -6,7 +6,7 @@
 ## Install
 
 ```sh
-npm i -S {name}
+npm i -S module-replacements-cli
 ```
 
 ## Usage
@@ -17,7 +17,10 @@ The interactive CLI can guide you through the following steps:
 - Applying the replacements automatically
 
 ```sh
-npx {name}
+npx mr
+
+# or the full name
+npx module-replacements
 ```
 
 ## License
