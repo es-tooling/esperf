@@ -51,6 +51,8 @@
     "fd-package-json": "^1.2.0",
     "fdir": "^6.2.0",
     "module-replacements": "^2.3.2",
-    "picocolors": "^1.0.1"
+    "module-replacements-codemods": "^1.0.2",
+    "picocolors": "^1.0.1",
+    "tinyexec": "^0.1.2"
   }
 }
