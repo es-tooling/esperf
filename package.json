@@ -8,6 +8,10 @@
     "lib",
     "!lib/test"
   ],
+  "bin": {
+    "module-replacements": "./lib/bin.js",
+    "mr": "./lib/bin.js"
+  },
   "scripts": {
     "clean:build": "premove lib",
     "clean:test": "premove coverage",
