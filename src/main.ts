@@ -31,7 +31,7 @@ export async function run(): Promise<void> {
   const cwd = getCwd();
   const packageManifest = await findPackage(cwd);
 
-  cl.intro('mr-cli');
+  cl.intro('module-replacements');
 
   if (packageManifest === null) {
     cl.log.error(dedent`
@@ -116,15 +116,17 @@ export async function run(): Promise<void> {
     }
   }
 
-  const packageScanSpinner = cl.spinner();
+  const scanSpinner = cl.spinner();
 
-  packageScanSpinner.start('Scanning `package.json` dependencies');
+  scanSpinner.start('Scanning dependencies');
 
   const dependenciesToRemove: string[] = [];
   const devDependenciesToRemove: string[] = [];
-  let packageJsonFailed = false;
+  let dependenciesFound = false;
 
   if (isDependenciesLike(packageDependencies)) {
+    scanSpinner.message('Scanning `package.json` dependencies');
+
     const traverseResults = scanDependencies(
       packageDependencies,
       manifestReplacements,
@@ -137,13 +139,17 @@ export async function run(): Promise<void> {
       }
     }
 
-    packageJsonFailed = true;
+    if (traverseResults.length > 0) {
+      dependenciesFound = true;
+    }
   }
 
   if (
     options.includeDevDependencies &&
     isDependenciesLike(packageDevDependencies)
   ) {
+    scanSpinner.message('Scanning `package.json` devDependencies');
+
     const traverseResults = scanDependencies(
       packageDevDependencies,
       manifestReplacements,
@@ -156,18 +162,29 @@ export async function run(): Promise<void> {
       }
     }
 
-    packageJsonFailed = true;
+    if (traverseResults.length > 0) {
+      dependenciesFound = true;
+    }
   }
 
-  if (packageJsonFailed) {
-    packageScanSpinner.stop(
-      '`package.json` dependencies scanned successfully.'
-    );
+  scanSpinner.message('Scanning files');
+
+  const files = await traverseFiles(options.filesDir);
+
+  const scanFilesResult = await scanFiles(
+    files,
+    manifestReplacements,
+    scanSpinner
+  );
+
+  if (scanFilesResult.length > 0) {
+    dependenciesFound = true;
+  }
+
+  if (dependenciesFound) {
+    scanSpinner.stop('Replaceable modules found.', 2);
   } else {
-    packageScanSpinner.stop(
-      '`package.json` contained replaceable dependencies.',
-      2
-    );
+    scanSpinner.stop('No replaceable modules found.');
   }
 
   if (
@@ -186,24 +203,6 @@ export async function run(): Promise<void> {
     }
 
     npmSpinner.stop('npm dependencies removed');
-  }
-
-  const fileScanSpinner = cl.spinner();
-
-  fileScanSpinner.start('Scanning files');
-
-  const files = await traverseFiles(options.filesDir);
-
-  const scanFilesResult = await scanFiles(
-    files,
-    manifestReplacements,
-    fileScanSpinner
-  );
-
-  if (scanFilesResult.length > 0) {
-    fileScanSpinner.stop('Detected files with replaceable modules!', 2);
-  } else {
-    fileScanSpinner.stop('All files scanned');
   }
 
   if (options.fix) {
