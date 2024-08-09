@@ -3,6 +3,11 @@
 > A command-line utility for detecting and fixing performance problems in
 > JavaScript projects.
 
+## Work in progress
+
+This project is very much a work in progress right now. Consider it unstable
+until we remove this notice.
+
 ## Install
 
 ```sh
