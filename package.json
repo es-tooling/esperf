@@ -1,5 +1,5 @@
 {
-  "name": "mr-cli",
+  "name": "esperf",
   "version": "0.0.1",
   "description": "A command-line utility for detecting performance issues",
   "main": "lib/main.js",
@@ -9,8 +9,7 @@
     "!lib/test"
   ],
   "bin": {
-    "module-replacements": "./lib/bin.js",
-    "mr": "./lib/bin.js"
+    "esperf": "./lib/bin.js"
   },
   "scripts": {
     "clean:build": "premove lib",

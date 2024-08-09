@@ -28,10 +28,39 @@ function isDependenciesLike(obj: unknown): obj is Record<string, string> {
 }
 
 export async function run(): Promise<void> {
+  cl.intro('esperf');
+
+  const tasks = await cl.multiselect({
+    message: 'What would you like to do?',
+    initialValues: [
+      'module-replacements'
+    ],
+    options: [
+      {
+        label: 'Scan for module replacements',
+        value: 'module-replacements'
+      }
+    ]
+  });
+
+  if (cl.isCancel(tasks)) {
+    cl.cancel('Operation cancelled');
+    exit(0);
+  }
+
+  for (const task of tasks) {
+    switch (task) {
+      case 'module-replacements':
+        await runModuleReplacements();
+        break;
+    }
+  }
+
+  cl.outro('All tasks complete!');
+}
+async function runModuleReplacements(): Promise<void> {
   const cwd = getCwd();
   const packageManifest = await findPackage(cwd);
-
-  cl.intro('module-replacements');
 
   if (packageManifest === null) {
     cl.log.error(dedent`
@@ -208,6 +237,4 @@ export async function run(): Promise<void> {
   if (options.fix) {
     await fixFiles(scanFilesResult);
   }
-
-  cl.outro('All checks complete!');
 }
