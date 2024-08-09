@@ -9,7 +9,7 @@
     "!lib/test"
   ],
   "bin": {
-    "esperf": "./lib/bin.js"
+    "esperf": "lib/bin.js"
   },
   "scripts": {
     "clean:build": "premove lib",
@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/es-tooling/cli.git"
+    "url": "git+https://github.com/es-tooling/esperf.git"
   },
   "keywords": [
     "cli",
@@ -34,9 +34,9 @@
   "author": "James Garbutt (https://github.com/43081j)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/es-tooling/cli/issues"
+    "url": "https://github.com/es-tooling/esperf/issues"
   },
-  "homepage": "https://github.com/es-tooling/cli#readme",
+  "homepage": "https://github.com/es-tooling/esperf#readme",
   "devDependencies": {
     "@eslint/js": "^9.8.0",
     "@types/node": "^22.1.0",
