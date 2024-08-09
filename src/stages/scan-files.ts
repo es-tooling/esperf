@@ -12,14 +12,10 @@ async function scanFile(
   contents: string,
   lines: string[],
   replacements: modReplacements.ModuleReplacement[]
-): Promise<FileReplacement> {
+): Promise<FileReplacement | null> {
   const ast = sg.parse(contents);
   const root = ast.root();
-  const result: FileReplacement = {
-    path: filePath,
-    contents,
-    replacements: []
-  };
+  const matches: modReplacements.ModuleReplacement[] = [];
 
   for (const replacement of replacements) {
     const imports = root.findAll({
@@ -42,7 +38,7 @@ async function scanFile(
     });
 
     if (imports.length > 0) {
-      result.replacements.push(replacement);
+      matches.push(replacement);
     }
 
     for (const node of imports) {
@@ -73,7 +69,15 @@ async function scanFile(
     }
   }
 
-  return result;
+  if (matches.length === 0) {
+    return null;
+  }
+
+  return {
+    path: filePath,
+    contents,
+    replacements: matches
+  };
 }
 
 export async function scanFiles(
@@ -90,7 +94,11 @@ export async function scanFiles(
 
       spinner.message(`Scanning ${file}`);
 
-      results.push(await scanFile(file, contents, lines, replacements));
+      const scanResult = await scanFile(file, contents, lines, replacements);
+
+      if (scanResult) {
+        results.push(scanResult);
+      }
     } catch (err) {
       cl.log.error(dedent`
         Could not read file ${file}:

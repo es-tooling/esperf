@@ -32,9 +32,7 @@ export async function run(): Promise<void> {
 
   const tasks = await cl.multiselect({
     message: 'What would you like to do?',
-    initialValues: [
-      'module-replacements'
-    ],
+    initialValues: ['module-replacements'],
     options: [
       {
         label: 'Scan for module replacements',
