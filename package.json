@@ -1,6 +1,6 @@
 {
   "name": "esperf",
-  "version": "0.0.1",
+  "version": "0.0.0-dev",
   "description": "A command-line utility for detecting performance issues",
   "main": "lib/main.js",
   "type": "module",
