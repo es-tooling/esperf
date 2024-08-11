@@ -1,11 +1,11 @@
 import * as modReplacements from 'module-replacements';
 import {ts as sg} from '@ast-grep/napi';
-import {readFile} from 'node:fs/promises';
 import dedent from 'dedent';
 import pc from 'picocolors';
 import {type FileReplacement} from './../../shared-types.js';
 import {suggestReplacement} from './../../suggest-replacement.js';
 import {parentPort} from 'node:worker_threads';
+import {open} from 'node:fs/promises';
 
 async function scanFile(
   filePath: string,
@@ -85,9 +85,11 @@ async function scanTask(
   replacements: modReplacements.ModuleReplacement[]
 ) {
   try {
-    const contents = await readFile(file, 'utf8');
+    const fd = await open(file);
+    const contents = await fd.readFile({encoding: 'utf-8'});
     const lines = contents.split('\n');
     const scanResult = await scanFile(file, contents, lines, replacements);
+    await fd.close();
 
     parentPort?.postMessage({type: 'result', value: scanResult});
   } catch (err) {
