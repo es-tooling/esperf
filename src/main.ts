@@ -196,43 +196,47 @@ async function runModuleReplacements(): Promise<void> {
 
   scanSpinner.message('Scanning files');
 
-  const files = await traverseFiles(options.filesDir);
+  try {
+    const files = await traverseFiles(options.filesDir);
 
-  const scanFilesResult = await scanFiles(
-    files,
-    manifestReplacements,
-    scanSpinner
-  );
+    const scanFilesResult = await scanFiles(
+      files,
+      manifestReplacements,
+      scanSpinner
+    );
 
-  if (scanFilesResult.length > 0) {
-    dependenciesFound = true;
-  }
-
-  if (dependenciesFound) {
-    scanSpinner.stop('Replaceable modules found.', 2);
-  } else {
-    scanSpinner.stop('No replaceable modules found.');
-  }
-
-  if (
-    options.autoUninstall &&
-    (dependenciesToRemove.length > 0 || devDependenciesToRemove.length > 0)
-  ) {
-    const npmSpinner = cl.spinner();
-
-    npmSpinner.start('Removing npm dependencies');
-
-    if (dependenciesToRemove.length > 0) {
-      await x('npm', ['rm', '-S', ...dependenciesToRemove]);
-    }
-    if (devDependenciesToRemove.length > 0) {
-      await x('npm', ['rm', '-D', ...devDependenciesToRemove]);
+    if (scanFilesResult.length > 0) {
+      dependenciesFound = true;
     }
 
-    npmSpinner.stop('npm dependencies removed');
-  }
+    if (dependenciesFound) {
+      scanSpinner.stop('Replaceable modules found.', 2);
+    } else {
+      scanSpinner.stop('No replaceable modules found.');
+    }
 
-  if (options.fix) {
-    await fixFiles(scanFilesResult);
+    if (
+      options.autoUninstall &&
+      (dependenciesToRemove.length > 0 || devDependenciesToRemove.length > 0)
+    ) {
+      const npmSpinner = cl.spinner();
+
+      npmSpinner.start('Removing npm dependencies');
+
+      if (dependenciesToRemove.length > 0) {
+        await x('npm', ['rm', '-S', ...dependenciesToRemove]);
+      }
+      if (devDependenciesToRemove.length > 0) {
+        await x('npm', ['rm', '-D', ...devDependenciesToRemove]);
+      }
+
+      npmSpinner.stop('npm dependencies removed');
+    }
+
+    if (options.fix) {
+      await fixFiles(scanFilesResult);
+    }
+  } catch (error) {
+    scanSpinner.stop(error as string, 1);
   }
 }
