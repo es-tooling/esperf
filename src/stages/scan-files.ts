@@ -13,6 +13,7 @@ const available = availableParallelism();
 export function scanFiles(
   files: string[],
   replacements: modReplacements.ModuleReplacement[],
+  threads: number,
   spinner: ReturnType<typeof cl.spinner>
 ): Promise<FileReplacement[]> {
   return new Promise((resolve, reject) => {
@@ -21,7 +22,7 @@ export function scanFiles(
     const filesLength = files.length;
     const results: FileReplacement[] = [];
 
-    for (const file of files.splice(0, available)) {
+    for (const file of files.splice(0, threads)) {
       const worker = new Worker(`${__dirname}/workers/scan-file.js`);
       // todo, what todo with the errors?
       worker.on('error', (error) => reject(error.message));

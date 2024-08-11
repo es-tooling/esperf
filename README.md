@@ -28,6 +28,16 @@ The interactive CLI can guide you through the following steps:
 npx esperf
 ```
 
+## Advanced Usage
+
+The interactive CLI will show more steps:
+
+- Set scan speed
+
+```sh
+npx esperf --advanced
+```
+
 ## License
 
 MIT
