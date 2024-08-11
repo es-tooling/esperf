@@ -5,6 +5,7 @@ import dedent from 'dedent';
 import pc from 'picocolors';
 import {type FileReplacement} from './../../shared-types.js';
 import {suggestReplacement} from './../../suggest-replacement.js';
+import {parentPort} from 'node:worker_threads';
 
 async function scanFile(
   filePath: string,
@@ -86,17 +87,11 @@ async function scanTask(
   try {
     const contents = await readFile(file, 'utf8');
     const lines = contents.split('\n');
-
     const scanResult = await scanFile(file, contents, lines, replacements);
 
-    // if (scanResult) {
-    // @ts-ignore
-    process.send({type: 'result', value: scanResult});
-    // } else {
-    // process.exit(0);
-    // }
+    parentPort?.postMessage({type: 'result', value: scanResult});
   } catch (err) {
-    process.send({
+    parentPort?.postMessage({
       type: 'error',
       value: dedent`
       Could not read file ${file}:
@@ -104,15 +99,10 @@ async function scanTask(
       ${String(err)}
     `
     });
-    // cl.log.error(dedent`
-    //   Could not read file ${file}:
-
-    //   ${String(err)}
-    // `);
   }
 }
 
-process.on(
+parentPort?.on(
   'message',
   (message: {
     file: string;
