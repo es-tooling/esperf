@@ -10,25 +10,21 @@ import {traverseFiles} from './stages/traverse-files.js';
 import {scanDependencies} from './stages/scan-dependencies.js';
 import {availableParallelism} from 'node:os';
 
-let advanced = false;
+const maxThreads = availableParallelism();
+
+const params: {
+  parallelism: number;
+} = {
+  parallelism: maxThreads * 0.5
+};
 
 for (let i = 0; i < process.argv.length; ++i) {
-  if (process.argv[i] === '--advanced') advanced = true;
-}
-
-function getWantedThreads(scanSpeed: string): number {
-  const threads = availableParallelism();
-  switch (scanSpeed) {
-    case 'slow':
-      return threads * 0.25;
-    case 'medium':
-      return threads * 0.5;
-    case 'fast':
-      return threads * 0.75;
-    case 'fastest':
-      return threads;
+  if (process.argv[i] === '--parallelism ') {
+    params.parallelism = Math.min(
+      Math.max(Number(process.argv[i]) + 1, 1),
+      maxThreads
+    );
   }
-  return 1;
 }
 
 const availableManifests: Record<string, modReplacements.ManifestModule> = {
@@ -140,41 +136,7 @@ async function runModuleReplacements(): Promise<void> {
         cl.confirm({
           message: 'Automatically uninstall packages?',
           initialValue: false
-        }),
-      scanSpeed: () =>
-        advanced
-          ? cl.select({
-              message: 'Preferred scan speed',
-              options: [
-                {
-                  value: 'fastest',
-                  label: 'Fastest',
-                  hint: 'uses all the threads, pushes cpu to 100%'
-                },
-                {
-                  value: 'fast',
-                  label: 'Fast',
-                  hint: '75% of available threads'
-                },
-                {
-                  value: 'medium',
-                  label: 'Medium',
-                  hint: '50% of available threads'
-                },
-                {
-                  value: 'slow',
-                  label: 'Slow',
-                  hint: '25% of available threads'
-                },
-                {
-                  value: 'slowest',
-                  label: 'Slowest',
-                  hint: 'disables parallelism, 1 thread'
-                }
-              ],
-              initialValue: 'medium'
-            })
-          : Promise.resolve('medium')
+        })
     },
     {
       onCancel: () => {
@@ -254,12 +216,11 @@ async function runModuleReplacements(): Promise<void> {
 
   try {
     const files = await traverseFiles(options.filesDir);
-    const threads = getWantedThreads(options.scanSpeed);
 
     const scanFilesResult = await scanFiles(
       files,
       manifestReplacements,
-      threads,
+      params.parallelism,
       scanSpinner
     );
 

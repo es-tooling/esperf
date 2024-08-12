@@ -28,14 +28,14 @@ The interactive CLI can guide you through the following steps:
 npx esperf
 ```
 
-## Advanced Usage
+### Flags
 
-The interactive CLI will show more steps:
+#### parallelism
 
-- Set scan speed
+Amount of threads to use.
 
-```sh
-npx esperf --advanced
+```
+npx esperf --parallelism 4
 ```
 
 ## License
