@@ -28,6 +28,16 @@ The interactive CLI can guide you through the following steps:
 npx esperf
 ```
 
+### Flags
+
+#### parallelism
+
+Amount of threads to use.
+
+```
+npx esperf --parallelism 4
+```
+
 ## License
 
 MIT
