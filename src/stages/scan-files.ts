@@ -28,7 +28,7 @@ export function scanFiles(
       worker.on('error', (error) => reject(error.message));
       worker.on('message', (message) => {
         if (message?.type === 'result') {
-          results.push(message.value);
+          if (message.value) results.push(message.value);
           i += 1;
           if (i === filesLength) {
             resolve(results);
