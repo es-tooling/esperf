@@ -15,14 +15,13 @@ const maxThreads = availableParallelism();
 const params: {
   parallelism: number;
 } = {
-  parallelism: maxThreads * 0.5
+  parallelism: Math.round(maxThreads * 0.5)
 };
 
 for (let i = 0; i < process.argv.length; ++i) {
   if (process.argv[i] === '--parallelism ') {
-    params.parallelism = Math.min(
-      Math.max(Number(process.argv[i]) + 1, 1),
-      maxThreads
+    params.parallelism = Math.round(
+      Math.min(Math.max(Number(process.argv[i]) + 1, 1), maxThreads)
     );
   }
 }
