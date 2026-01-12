@@ -8,6 +8,23 @@ import {scanFiles} from './stages/scan-files.js';
 import {fixFiles} from './stages/fix-files.js';
 import {traverseFiles} from './stages/traverse-files.js';
 import {scanDependencies} from './stages/scan-dependencies.js';
+import {availableParallelism} from 'node:os';
+
+const maxThreads = availableParallelism();
+
+const params: {
+  parallelism: number;
+} = {
+  parallelism: Math.round(maxThreads * 0.5)
+};
+
+for (let i = 0; i < process.argv.length; ++i) {
+  if (process.argv[i] === '--parallelism ') {
+    params.parallelism = Math.round(
+      Math.min(Math.max(Number(process.argv[i]) + 1, 1), maxThreads)
+    );
+  }
+}
 
 const availableManifests: Record<string, modReplacements.ManifestModule> = {
   native: modReplacements.nativeReplacements,
@@ -196,43 +213,48 @@ async function runModuleReplacements(): Promise<void> {
 
   scanSpinner.message('Scanning files');
 
-  const files = await traverseFiles(options.filesDir);
+  try {
+    const files = await traverseFiles(options.filesDir);
 
-  const scanFilesResult = await scanFiles(
-    files,
-    manifestReplacements,
-    scanSpinner
-  );
+    const scanFilesResult = await scanFiles(
+      files,
+      manifestReplacements,
+      params.parallelism,
+      scanSpinner
+    );
 
-  if (scanFilesResult.length > 0) {
-    dependenciesFound = true;
-  }
-
-  if (dependenciesFound) {
-    scanSpinner.stop('Replaceable modules found.', 2);
-  } else {
-    scanSpinner.stop('No replaceable modules found.');
-  }
-
-  if (
-    options.autoUninstall &&
-    (dependenciesToRemove.length > 0 || devDependenciesToRemove.length > 0)
-  ) {
-    const npmSpinner = cl.spinner();
-
-    npmSpinner.start('Removing npm dependencies');
-
-    if (dependenciesToRemove.length > 0) {
-      await x('npm', ['rm', '-S', ...dependenciesToRemove]);
-    }
-    if (devDependenciesToRemove.length > 0) {
-      await x('npm', ['rm', '-D', ...devDependenciesToRemove]);
+    if (scanFilesResult.length > 0) {
+      dependenciesFound = true;
     }
 
-    npmSpinner.stop('npm dependencies removed');
-  }
+    if (dependenciesFound) {
+      scanSpinner.stop('Replaceable modules found.', 2);
+    } else {
+      scanSpinner.stop('No replaceable modules found.');
+    }
 
-  if (options.fix) {
-    await fixFiles(scanFilesResult);
+    if (
+      options.autoUninstall &&
+      (dependenciesToRemove.length > 0 || devDependenciesToRemove.length > 0)
+    ) {
+      const npmSpinner = cl.spinner();
+
+      npmSpinner.start('Removing npm dependencies');
+
+      if (dependenciesToRemove.length > 0) {
+        await x('npm', ['rm', '-S', ...dependenciesToRemove]);
+      }
+      if (devDependenciesToRemove.length > 0) {
+        await x('npm', ['rm', '-D', ...devDependenciesToRemove]);
+      }
+
+      npmSpinner.stop('npm dependencies removed');
+    }
+
+    if (options.fix) {
+      await fixFiles(scanFilesResult);
+    }
+  } catch (error) {
+    scanSpinner.stop(error as string, 1);
   }
 }
