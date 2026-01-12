@@ -1,3 +1,15 @@
+# ARCHIVED
+
+This project was basically an early attempt at tooling to help fix performance problems in JavaScript/TypeScript code.
+
+We have since implemented this in the [e18e ESLint plugin](https://github.com/e18e/eslint-plugin) and the [e18e web-features codemods](https://github.com/e18e/web-features-codemods) projects.
+
+Similarly, the [e18e CLI](https://github.com/e18e/cli/) will also be capable of this one day.
+
+These tools essentially replace what this one was intended to be. Please check those out instead!
+
+---
+
 # esperf
 
 > A command-line utility for detecting and fixing performance problems in
